@@ -75,7 +75,13 @@ namespace UdpHolePuncher
                 Connections[endpoint] = HandlerFactory(endpoint);
             }
 
-            
+            var handler = Connections[endpoint];
+
+
+            if (handler.Finished)
+            {
+                Connections.TryRemove(endpoint, out handler);
+            }
         }
     }
 }
