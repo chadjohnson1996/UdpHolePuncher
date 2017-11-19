@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -13,17 +15,24 @@ namespace UdpHolePuncher
     public abstract class HolePunchListener
     {
 
+        private ConcurrentDictionary<IPEndPoint, IConnectionHandler> Connections { get; } = new ConcurrentDictionary<IPEndPoint, IConnectionHandler>();
         /// <summary>
         /// port to listen on
         /// </summary>
         public int Port { get; protected set; }
+
+        /// <summary>
+        /// the handler factory
+        /// </summary>
+        public Func<IPEndPoint, IConnectionHandler> HandlerFactory { get; protected set; }
         /// <summary>
         /// creates a listener on the given port with the given handler
         /// </summary>
         /// <param name="port">the port for it to listen on</param>
-        protected HolePunchListener(int port)
+        protected HolePunchListener(int port, Func<IPEndPoint, IConnectionHandler> handlerFactory)
         {
             Port = port;
+            HandlerFactory = handlerFactory;
         }
 
         /// <summary>
@@ -58,6 +67,15 @@ namespace UdpHolePuncher
         public async Task HandleReceived(UdpReceiveResult toHandle)
         {
             await Task.Yield();
+
+            var endpoint = toHandle.RemoteEndPoint;
+
+            if (!Connections.ContainsKey(endpoint))
+            {
+                Connections[endpoint] = HandlerFactory(endpoint);
+            }
+
+            
         }
     }
 }
