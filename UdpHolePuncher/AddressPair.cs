@@ -16,5 +16,19 @@ namespace UdpHolePuncher
         /// the private ip
         /// </summary>
         public IPEndPoint PrivateIp { get; set; }
+
+        /// <summary>
+        /// checks whether this pair matches by ip another pair
+        /// </summary>
+        /// <param name="pair">the pair to check</param>
+        /// <returns>true if the ips match, false otherwise</returns>
+        public bool IpEquals(AddressPair pair)
+        {
+            if (PublicIp == null || PrivateIp == null || pair.PrivateIp == null || pair.PublicIp == null)
+            {
+                return false;
+            }
+            return PublicIp.Address.Equals(pair.PublicIp.Address) && PrivateIp.Address.Equals(pair.PrivateIp.Address);
+        }
     }
 }
